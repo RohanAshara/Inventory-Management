@@ -257,24 +257,7 @@
         fetchInventory();
 
 
-  // Delete Product Function
-  async function deleteProduct(inventoryId) {
-            try {
-                const response = await fetch(`${apiUrl}/${inventoryId}`, {
-                    method: "DELETE",
-                });
 
-                if (!response.ok) {
-                    throw new Error(`Failed to delete product: ${response.status}`);
-                }
-
-                showAlert("Product deleted successfully!");
-                fetchInventory(); // Refresh the table after deletion
-            } catch (error) {
-                console.error("Error deleting product:", error);
-                showAlert("Failed to delete product. Please try again.");
-            }
-        }
         // Delete Product Function
         async function deleteProduct(inventoryId) {
             try {
