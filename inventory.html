@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory</title>
+    <link rel="stylesheet" href="inventory.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <div id="customAlert" class="custom-alert">
+            <p id="alertMessage"></p>
+        </div>
+
+
+        <section id="products">
+            <div id="pro">
+                <h1>Inventory Management</h1>
+                <a href="admin.html" class="btn back-btn">Back to Dashboard</a>
+            </div>
+            <!-- Add Product Form -->
+            <section id="add-product">
+                <h2>Add Product</h2>
+                <form id="addProductForm">
+                    <input type="text" id="productName" placeholder="Product Name" required>
+                    <input type="number" id="quantity" placeholder="Quanlity" required>
+                    <input type="number" id="price" placeholder="Price" required>
+                    <input type="number" id="selling" placeholder="Selling" required>
+                    <input type="file" id="productImage" accept="image/*" required>
+
+                    <button type="submit">Add Product</button>
+                </form>
+            </section>
+
+            <section id="edit-product" style="display: none;">
+                <h2>Edit Product</h2>
+                <form id="editProductForm">
+                    <input type="hidden" id="editInventoryId">
+                    <input type="text" id="editProductName" placeholder="Product Name" required>
+                    <input type="number" id="editQuantity" placeholder="Quantity" required>
+                    <input type="number" id="editPrice" placeholder="Price" required>
+                    <input type="number" id="editSelling" placeholder="Selling" required>
+                    <input type="file" id="editImage" accept="image/*" required>
+                    <button type="submit">Update Product</button>
+                    <button type="button" onclick="closeEditForm()">Cancel</button>
+                </form>
+            </section>
+
+            <div class="total-row">
+                <span id="grandTotal" class="grand-total">Total Sale: 0.00</span>
+                <button id="downloadCSV" class="btn">Download CSV</button>
+                <button id="downloadTXT" class="btn">Download Text File</button>
+            </div>
+
+            <section id="filter-products">
+                <h2>Filter Products</h2>
+                <input type="text" id="productFilter" placeholder="Search by Product Name">
+            </section>
+
+
+            <!-- Products Table -->
+            <div class="table-container">
+                <table id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Selling</th>
+                            <th>Image</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const categoryList = document.getElementById('category-list');
+        const productTableBody = document.querySelector('#productsTable tbody');
+        const apiUrl = "http://localhost:3000/inventory";
+
+        async function fetchInventory() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch inventory: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("Fetched inventory data:", data);
+
+                // Render the inventory data
+                renderInventory(data);
+            } catch (error) {
+                console.error("Error fetching inventory:", error);
+            }
+        }
+
+        function renderInventory(inventory) {
+            productTableBody.innerHTML = "";
+
+            inventory.forEach((item, index) => {
+                const row = document.createElement("tr");
+                const imageSrc = item.ProductImage ? item.ProductImage : "placeholder.png";
+
+                // Calculate total for this product
+                const total = item.Quantity * item.Price;
+
+                row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.ProductName}</td>
+            <td>${item.Quantity}</td>
+            <td>${item.Price}</td>
+            <td>${item.Selling}</td>
+            <td><img src="${imageSrc}" alt="Product Image" width="50" height="50"/></td>
+            <td>${total}</td> <!-- Updated Total -->
+            <td>
+                <button class="edit-btn" onclick="openEditForm(${item.InventoryID}, '${item.ProductName}', ${item.Quantity}, ${item.Price}, ${item.Selling}, '${imageSrc}')">Edit</button>
+                <button class="delete-btn" onclick="deleteProduct(${item.InventoryID})">Delete</button>
+            </td>
+        `;
+                productTableBody.appendChild(row);
+            });
+
+            updateGrandTotal(); // Recalculate the grand total after rendering
+        }
+
+
+
+
+
+        function openEditForm(id, productName, quantity, price, selling, imageSrc) {
+            document.getElementById("editInventoryId").value = id;
+            document.getElementById("editProductName").value = productName;
+            document.getElementById("editQuantity").value = quantity;
+            document.getElementById("editPrice").value = price;
+            document.getElementById("editSelling").value = selling;
+            document.getElementById("edit-product").style.display = "block";
+        }
+
+        document.getElementById("editProductForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById("editInventoryId").value;
+            const productName = document.getElementById("editProductName").value;
+            const quantity = parseInt(document.getElementById("editQuantity").value);
+            const price = parseFloat(document.getElementById("editPrice").value);
+            const selling = parseFloat(document.getElementById("editSelling").value);
+            const editImageInput = document.getElementById("editImage").files[0];
+
+            // Calculate the total before updating
+            const total = quantity * price;
+
+            const updatedData = {
+                ProductName: productName,
+                Quantity: quantity,
+                Price: price,
+                Selling: selling,
+                Total: total,
+            };
+
+            // Handle file update if selected
+            const formData = new FormData();
+            for (const key in updatedData) {
+                formData.append(key, updatedData[key]);
+            }
+
+            if (editImageInput) {
+                formData.append("ProductImage", editImageInput);
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/${id}`, {
+                    method: "PUT",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Error response:", errorText);
+                    throw new Error("Failed to update product");
+                }
+
+                fetchInventory();
+                showAlert("Product updated successfully!");
+                closeEditForm();
+            } catch (error) {
+                console.error("Error updating product:", error);
+                showAlert("Failed to update product. Please try again.");
+            }
+        });
+
+
+
+
+
+        function closeEditForm() {
+            debugger;
+            document.getElementById("edit-product").style.display = "none";
+        }
+
+
+        // Add Product Form submission
+        const addProductForm = document.getElementById("addProductForm");
+
+
+
+        addProductForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const productName = document.getElementById("productName").value;
+            const quantity = parseInt(document.getElementById("quantity").value);
+            const price = parseFloat(document.getElementById("price").value);
+            const selling = parseFloat(document.getElementById("selling").value);
+            const productImageInput = document.getElementById("productImage").files[0];
+
+            if (!productImageInput) {
+                showAlert("Please select an image.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("productName", productName);
+            formData.append("quantity", quantity);
+            formData.append("price", price);
+            formData.append("selling", selling);
+            formData.append("productImage", productImageInput);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to add product: ${response.status}`);
+                }
+
+                showAlert("Product added successfully!");
+                addProductForm.reset();
+                fetchInventory();
+            } catch (error) {
+                console.error("Error adding product:", error);
+                showAlert("Failed to add product. Please try again.");
+            }
+        });
+
+        fetchInventory();
+
+
+
+        // Delete Product Function
+        async function deleteProduct(inventoryId) {
+            try {
+                const response = await fetch(`${apiUrl}/${inventoryId}`, {
+                    method: "DELETE",
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete product: ${response.status}`);
+                }
+
+                showAlert("Product deleted successfully!");
+                fetchInventory(); // Refresh the table after deletion
+            } catch (error) {
+                console.error("Error deleting product:", error);
+                showAlert("Failed to delete product. Please try again.");
+            }
+        }
+
+
+        function showAlert(message) {
+            const customAlert = document.getElementById('customAlert');
+            const alertMessage = document.getElementById('alertMessage');
+
+            // Set the message text
+            alertMessage.textContent = message;
+
+            // Add blinking class and show the alert
+            alertMessage.classList.add('blinking');
+            customAlert.style.display = 'block';
+
+            // Automatically hide the alert after 2 seconds
+            setTimeout(() => {
+                customAlert.style.display = 'none'; // Hide the alert
+                alertMessage.classList.remove('blinking'); // Remove blinking class
+            }, 1500); // 2 seconds
+        }
+
+        function updateGrandTotal() {
+            const rows = document.querySelectorAll('#productsTable tbody tr');
+            let totalSum = 0;
+
+            rows.forEach(row => {
+                const totalCell = row.cells[6]; // "Total" is in the 6th column (index 5)
+                if (totalCell) {
+                    totalSum += parseFloat(totalCell.textContent) || 0; // Add value or 0 if empty
+                }
+            });
+
+            // Update the grand total displayed
+            document.getElementById('grandTotal').textContent = `Total Sale: ${totalSum.toFixed(2)}rs.`;
+        }
+
+        // download csv file
+        document.getElementById("downloadCSV").addEventListener("click", function () {
+            const rows = document.querySelectorAll("#productsTable tbody tr");
+            let csvContent = "";
+            let totalSale = 0;
+            let totalQuantity = 0;
+
+            // Add the header row to the CSV (use the table headers)
+            const headers = document.querySelectorAll("#productsTable th");
+            const headerContent = Array.from(headers)
+                .filter((_, index) => index !== 5 && index !== 7)  // Exclude image and actions columns
+                .map(header => `"${header.textContent.trim()}"`)  // Escape and trim content
+                .join(",");
+            csvContent += headerContent + "\n";  // Add header to CSV
+
+            // Loop through each row and extract cell data
+            rows.forEach((row) => {
+                // Skip hidden rows (filtered products)
+                if (row.style.display !== "none") {
+                    const cells = row.querySelectorAll("td");
+
+                    // Extract and skip the image and action columns
+                    const rowContent = Array.from(cells)
+                        .filter((_, index) => index !== 5 && index !== 7)
+                        .map(cell => `"${cell.textContent.trim()}"`)
+                        .join(",");
+
+                    csvContent += rowContent + "\n";
+
+                    // Add to total sale and total quantity
+                    const totalCell = cells[6];  // Total is in the 7th column (index 6)
+                    const quantityCell = cells[3];  // Quantity is in the 4th column (index 3)
+                    totalSale += parseFloat(totalCell.textContent) || 0;
+                    totalQuantity += parseInt(quantityCell.textContent) || 0;
+                }
+            });
+
+            // Add Total Sale and Total Quantity row at the end of CSV
+            csvContent += `\n"Total Quantity", "${totalQuantity} units"\n"Total Sale", "${totalSale.toFixed(2)} rs."`;
+
+            // Create a Blob with the CSV content
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary download link
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "inventory.csv"; // File name for the downloaded CSV
+            link.style.display = "none"; // Hide the link
+
+            // Append link to body, trigger click, and remove the link
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // download text file
+        document.getElementById("downloadTXT").addEventListener("click", function () {
+            const rows = document.querySelectorAll("#productsTable tbody tr");
+            let textContent = "";
+            let totalSale = 0; // Variable to store the total sale value
+            let totalQuantity = 0; // variable to store quantity
+
+            // Loop through each row and extract cell data
+            rows.forEach((row) => {
+                // Only include rows that are visible (not hidden by filter)
+                if (row.style.display !== "none") {
+                    const cells = row.querySelectorAll("th, td");
+
+                    // Extract product details from each row
+                    const productName = cells[1].textContent.trim();
+                    const quantity = parseInt(cells[2].textContent.trim(), 10);
+                    const price = parseFloat(cells[3].textContent.trim());
+                    const selling = parseFloat(cells[4].textContent.trim());
+                    const total = parseFloat(cells[6].textContent.trim()); // Get the total sale for this product
+
+                    // Add the product's total sale to the overall totalSale
+                    totalSale += total;
+                    //add the total quantity 
+                    totalQuantity += quantity;
+
+                    // Create a readable structure for each product
+                    textContent += `Product Name: ${productName}\n`;
+                    textContent += `Quantity: ${quantity}\n`;
+                    textContent += `Price: ${price.toFixed(2)}\n`;
+                    textContent += `Selling: ${selling.toFixed(2)}\n`;
+                    textContent += `Total Sale: ${total.toFixed(2)}\n`;
+                    textContent += "-------------------------\n"; // Separator between products
+                }
+            });
+
+
+            // Add the total sale value at the end of the text file
+            textContent += `Total Quantity: ${totalQuantity}units\n`;
+
+            // Add the total sale value at the end of the text file
+            textContent += `Total Sale: ${totalSale.toFixed(2)}rs.`;
+
+
+            // Create a Blob with the text content
+            const blob = new Blob([textContent], { type: "text/plain;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary download link
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "filtered_inventory.txt"; // Set the file name for the text file
+            link.style.display = "none"; // Hide the link
+
+            // Append link to body, trigger click, and remove the link
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+
+
+
+
+        // Add an event listener to the filter input
+        document.getElementById("productFilter").addEventListener("input", filterProducts);
+
+
+        // Function to update the grand total when filtering or when any changes happen
+        function updateTotalSale() {
+            const rows = document.querySelectorAll("#productsTable tbody tr");
+            let totalSale = 0;
+
+            rows.forEach(row => {
+                // Only include rows that are visible (not hidden by filter)
+                if (row.style.display !== "none") {
+                    const totalCell = row.cells[6]; // Total is in the 6th column (index 6)
+                    totalSale += parseFloat(totalCell.textContent) || 0; // Add value or 0 if empty
+                }
+            });
+
+            // Update the grand total displayed
+            document.getElementById('grandTotal').textContent = `Total Sale: ${totalSale.toFixed(2)}rs.`;
+        }
+
+
+        function filterProducts() {
+            const filterValue = document.getElementById("productFilter").value.toLowerCase(); // Get the search query
+            const rows = document.querySelectorAll('#productsTable tbody tr'); // Get all rows in the table
+
+            rows.forEach(row => {
+                const productNameCell = row.cells[1]; // Product name is in the 2nd column (index 1)
+                const productName = productNameCell.textContent.toLowerCase(); // Get the product name
+
+                // If the product name contains the filter value, show the row; otherwise, hide it
+                if (productName.includes(filterValue)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+            // Update the total sale after applying the filter
+            updateTotalSale();
+
+        }
+
+
+    </script>
+</body>
+
+</html>

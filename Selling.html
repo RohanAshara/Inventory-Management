@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Inventory</title>
+  <link rel="stylesheet" href="selling.css">
+</head>
+
+<body>
+  <div class="container">
+    <div id="customAlert" class="custom-alert">
+      <p id="alertMessage"></p>
+    </div>
+
+    <div class="header-row">
+      <h1>Sales Inventory</h1>
+      <a href="admin.html" class="back-button">Back to Dashboard</a>
+    </div>
+
+    <h2>Sales List</h2>
+
+
+
+
+    <div class="filter-container">
+      <label for="filterProduct">Filter by Product Name: </label>
+      <input type="text" id="filterProduct" placeholder="Enter Product Name">
+    </div>
+
+    <div id="sellingsTable">
+      <table>
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Person Name</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Sales data will be displayed here -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="total-row">
+      <span id="grandTotal" class="grand-total">Total Sale: 0.00</span>
+      <button id="downloadCSV" class="btn">Download CSV</button>
+      <button id="downloadTXT" class="btn">Download Text File</button>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = "http://localhost:3000";
+  
+    window.onload = function () {
+      fetchAndDisplaySales();
+    };
+  
+    function fetchAndDisplaySales() {
+      fetch(`${apiUrl}/sellings`)
+        .then(response => response.json())
+        .then(data => {
+          const tableBody = document.querySelector("#sellingsTable tbody");
+          tableBody.innerHTML = ""; // Clear existing rows
+          data.forEach((selling, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${selling.PersonName}</td>
+              <td>${selling.ProductName}</td>
+              <td>${selling.Quantity}</td>
+              <td>${selling.Price}</td>
+              <td>${selling.Total}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+  
+          updateGrandTotal(data); // Pass the entire data to update grand total
+        })
+        .catch(error => {
+          console.error("Error fetching sellings:", error);
+        });
+    }
+  
+    function updateGrandTotal(data) {
+      let totalSum = 0;
+      
+      data.forEach(selling => {
+        totalSum += parseFloat(selling.Total) || 0;
+      });
+  
+      document.getElementById('grandTotal').textContent = `Total Sale: ${totalSum.toFixed(2)}rs.`;
+    }
+  
+    document.getElementById("downloadCSV").addEventListener("click", function (e) {
+  e.preventDefault();
+
+  const filterValue = document.getElementById("filterProduct").value.toLowerCase();
+
+  fetch(`${apiUrl}/sellings`)
+    .then(response => response.json())
+    .then(data => {
+      // Filter the sales data based on the search input
+      const filteredData = filterValue
+        ? data.filter(selling => selling.ProductName.toLowerCase().includes(filterValue))
+        : data;
+
+      if (filteredData.length === 0) {
+        alert("No sales found for the given product name.");
+        return;
+      }
+
+      let csvContent = "Index,Person Name,Product Name,Quantity,Price,Total\n";
+
+      filteredData.forEach((selling, index) => {
+        const row = [
+          index + 1,
+          selling.PersonName,
+          selling.ProductName,
+          selling.Quantity,
+          selling.Price,
+          selling.Total
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+
+      // Calculate the total sale from the filtered data
+      const totalSale = filteredData.reduce((acc, selling) => acc + parseFloat(selling.Total), 0).toFixed(2);
+      const totalQuantity = filteredData.reduce((acc, selling) => acc + parseFloat(selling.Quantity), 0).toFixed(2);
+
+      // Append the total sale at the end of the CSV
+      csvContent += `\nTotal Sale: ${totalSale}rs.`;
+      csvContent += `\nTotal Quantity: ${totalQuantity}units`;
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `sales_data_${filterValue || "all"}.csv`;
+      link.style.display = "none";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    })
+    .catch(error => {
+      console.error("Error fetching sales:", error);
+    });
+});
+
+  
+document.getElementById("downloadTXT").addEventListener("click", function (e) {
+  e.preventDefault();
+
+  const filterValue = document.getElementById("filterProduct").value.toLowerCase();
+
+  fetch(`${apiUrl}/sellings`)
+    .then(response => response.json())
+    .then(data => {
+      // Filter the sales data based on the search input
+      const filteredData = filterValue
+        ? data.filter(selling => selling.ProductName.toLowerCase().includes(filterValue))
+        : data;
+
+      if (filteredData.length === 0) {
+        alert("No sales found for the given product name.");
+        return;
+      }
+
+      let textContent = ""; // Initialize empty content
+
+      let totalSelling = 0;  // Variable to store total selling value
+      let totalQuantity = 0; 
+
+      // Loop through the filtered data and add each sale's details in the new format
+      filteredData.forEach((selling) => {
+        const totalSale = parseFloat(selling.Total).toFixed(2); // Get the total sale value
+        const sellingPrice = parseFloat(selling.Price).toFixed(2); // Price per unit
+
+
+        textContent += `Person Name: ${selling.PersonName}\n`;
+        textContent += `Product Name: ${selling.ProductName}\n`;
+        textContent += `Quantity: ${selling.Quantity}\n`;
+        textContent += `Price: ${sellingPrice}\n`; // Selling price
+        textContent += `Total: ${totalSale}\n`;
+        textContent += "-------------------------\n"; // Separator between products
+
+        totalSelling += parseFloat(selling.Total); // Add total sale to the overall selling
+        totalQuantity += parseInt(selling.Quantity);
+      });
+      
+
+      // Append the total selling at the end of the text file
+      textContent += `Total Selling: ${totalSelling.toFixed(2)}\n`;
+      textContent += `Total Quantity: ${totalQuantity}\n`;
+
+      const blob = new Blob([textContent], { type: "text/plain;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "selling.txt";
+      link.style.display = "none";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    })
+    .catch(error => {
+      console.error("Error fetching sales:", error);
+    });
+});
+
+  
+    document.getElementById("filterProduct").addEventListener("input", function () {
+      const filterValue = this.value.toLowerCase();
+      filterSales(filterValue);
+    });
+  
+    function filterSales(filterValue) {
+      fetch(`${apiUrl}/sellings`)
+        .then(response => response.json())
+        .then(data => {
+          const filteredData = filterValue
+            ? data.filter(selling => selling.ProductName.toLowerCase().includes(filterValue))
+            : data;
+          displaySales(filteredData);
+          updateGrandTotal(filteredData); // Update total sale after filtering
+        })
+        .catch(error => {
+          console.error("Error fetching sellings:", error);
+        });
+    }
+  
+    function displaySales(data) {
+      const tableBody = document.querySelector("#sellingsTable tbody");
+      tableBody.innerHTML = "";
+  
+      data.forEach((selling, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${selling.PersonName}</td>
+          <td>${selling.ProductName}</td>
+          <td>${selling.Quantity}</td>
+          <td>${selling.Price}</td>
+          <td>${selling.Total}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+  </script>
+  
+</body>
+
+</html>

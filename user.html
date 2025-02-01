@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Page</title>
+  <link rel="stylesheet" href="user.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <div id="customAlert" class="custom-alert">
+      <p id="alertMessage"></p>
+    </div>
+
+    <h1 id="welcome-message">Welcome, User!</h1>
+    <p>You have successfully logged in.</p>
+    <button id="logout-button" onclick="handleLogout()">Logout</button>
+    <!-- <button id="cart-button">View Cart</button> -->
+      <button id="cart-button" class="btn btn-primary">
+        <i class="fas fa-shopping-cart"></i> View Cart <span id="cart-count" class="badge bg-light text-dark">(0)</span>
+      </button>
+      
+  </div>
+
+  <div class="main-section">
+    <!-- Product Section -->
+    <div class="section" id="product-section">
+      <h2>Products</h2>
+      <div id="product-cards-container" class="product-cards-grid"></div>
+    </div>
+
+    <!-- Cart Section -->
+    <div class="section" id="cart-section" style="display: none;">
+      <h2>Cart</h2>
+      <ul id="cart-list">
+        <li>No items in the cart</li>
+      </ul>
+      <button id="buy-button" onclick="handleBuy()">Buy</button>
+    </div>
+
+    <!-- Bill Section -->
+    <div class="section" id="bill-section" style="display: none;">
+      <h2>Bill</h2>
+      <table id="order-details-table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p>Total: <span id="bill-total">0 rs.</span></p>
+    </div>
+  </div>
+
+  <script>
+    const cart = [];
+    let totalBill = 0;
+    const apiUrl = "http://localhost:3000";
+
+    // Fetch products and display product cards
+    fetch(`${apiUrl}/inventory`)
+      .then(response => response.json())
+      .then(displayProductCards)
+      .catch(error => console.error('Error fetching product data:', error));
+
+    function displayProductCards(products) {
+      const container = document.getElementById('product-cards-container');
+      container.innerHTML = ''; // Clear previous content
+
+      products.forEach(product => {
+        const card = document.createElement('div');
+        card.classList.add('product-card');
+        const imageSrc = product.ProductImage || "placeholder.png";
+
+        card.innerHTML = `
+          <img src="${imageSrc}" alt="Product Image" class="product-image" />
+          <h3>${product.ProductName}</h3>
+          <p>Price: ₹${product.Selling}</p>
+          <button onclick="addToCart('${product.InventoryID}', '${product.ProductName}', ${product.Selling})">Add to Cart</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+      // function addToCart(productId, productName, price) {
+      //   const quantity = 1; // Default quantity is set to 1
+      //   const totalPrice = price * quantity;
+      //   cart.push({ productId, productName, quantity, price: totalPrice });
+      //   totalBill += totalPrice;
+      //   updateCart();
+      //   updateBill();
+      //   updateOrderDetails();
+      //   showAlert(`${productName} added to cart.`);
+      // }
+
+    function updateCart() {
+      const cartList = document.getElementById('cart-list');
+      cartList.innerHTML = cart.length === 0 ? '<li>No items in the cart</li>' : '';
+      cart.forEach((item, index) => {
+        cartList.innerHTML += `<li>${item.productName} - ${item.quantity} - ${item.price}rs. <button onclick="removeFromCart(${index})">Remove</button></li>`;
+      });
+    }
+
+    function removeFromCart(index) {
+      totalBill -= cart[index].price;
+      cart.splice(index, 1);
+      updateCart();
+      updateBill();
+      updateOrderDetails();
+    }
+
+    function updateBill() {
+      document.getElementById('bill-total').textContent = totalBill;
+    }
+
+    function updateOrderDetails() {
+      const tableBody = document.querySelector("#order-details-table tbody");
+      tableBody.innerHTML = ''; // Clear previous details
+      cart.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>${item.price / item.quantity}</td>
+          <td>${item.price}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Handle Buy action
+    function handleBuy() {
+      if (cart.length === 0) {
+        showAlert("Your cart is empty. Please add some products to the cart before buying.");
+        return;
+      }
+
+      const confirmPurchase = confirm(`Are you sure you want to buy these items? Total: rs.${totalBill}`);
+      if (confirmPurchase) {
+        const personName = localStorage.getItem('loggedInUser') || prompt("Please enter your name:", "Guest");
+
+        cart.forEach(item => {
+          const saleData = {
+            InventoryID: parseInt(item.productId),
+            PersonName: personName.trim(),
+            ProductName: item.productName.trim(),
+            Quantity: parseInt(item.quantity),
+            Price: parseFloat((item.price / item.quantity).toFixed(2)),
+            Total: parseFloat(item.price.toFixed(2))
+          };
+
+          console.log("Sale Data Payload: ", saleData); // Debugging log
+
+          fetch(`${apiUrl}/sellings`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(saleData)
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.message === "Sale added successfully") {
+                console.log("Sale processed successfully:", item.productName);
+              } else {
+                showAlert("Error processing the purchase.");
+              }
+            })
+            .catch(error => {
+              console.error("Error:", error);
+              showAlert("An error occurred while processing your purchase.");
+            });
+        });
+
+        cart.length = 0;
+        totalBill = 0;
+        updateCart();
+        updateBill();
+        updateOrderDetails();
+        showAlert("Purchase successful!");
+        location.reload();
+      }
+    }
+
+
+    window.onload = function () {
+      const loggedInUser = localStorage.getItem('loggedInUser');
+      if (loggedInUser) {
+        document.getElementById('welcome-message').textContent = `Welcome, ${loggedInUser}!`;
+      }
+
+      fetch(`${apiUrl}/inventory`)
+        .then(response => response.json())
+        .then(data => {
+          const productSelect = document.getElementById("product");
+          data.forEach(product => {
+            const option = document.createElement("option");
+            option.value = product.InventoryID;
+            option.textContent = product.ProductName;
+            // productSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error("Error fetching inventory:", error);
+        });
+    };
+
+    function handleLoginResponse(response) {
+      localStorage.setItem('loggedInUser', response.username);
+      localStorage.setItem('loggedIn Role', response.role);
+      // Check role and set proper message
+      if (response.role === 'admin') {
+        showAlert('Admin Login successful');
+        window.location.href = 'admin.html'; // Redirect to admin page
+      } else if (response.role === 'user') {
+        showAlert('User Login successful');
+        window.location.href = 'user.html'; // Redirect to user page
+      } else {
+        showAlert('Unknown role');
+      }
+    }
+
+    // Logout Functionality
+    function handleLogout() {
+      localStorage.removeItem('loggedInUser');
+      showAlert("You have been logged out.");
+      window.location.href = "login.html"; // Redirect to login page
+    }
+
+    function showAlert(message) {
+      const customAlert = document.getElementById('customAlert');
+      const alertMessage = document.getElementById('alertMessage');
+
+      // Set the message text
+      alertMessage.textContent = message;
+
+      // Add blinking class and show the alert
+      alertMessage.classList.add('blinking');
+      customAlert.style.display = 'block';
+
+      // Automatically hide the alert after 2 seconds
+      setTimeout(() => {
+        customAlert.style.display = 'none'; // Hide the alert
+        alertMessage.classList.remove('blinking'); // Remove blinking class
+      }, 1500); // 2 seconds
+    }
+
+    // Show Cart and Bill Sections on Cart Button Click
+    document.getElementById("cart-button").addEventListener("click", () => {
+      const cartSection = document.getElementById("cart-section");
+      const billSection = document.getElementById("bill-section");
+
+      // Toggle visibility for Cart and Bill sections
+      cartSection.style.display = cartSection.style.display === "none" ? "block" : "none";
+      billSection.style.display = billSection.style.display === "none" ? "block" : "none";
+
+      if (cartSection.style.display === "block") {
+        showAlert("Cart is now visible!");
+      }
+    });
+
+    function displayProductCards(products) {
+  const container = document.getElementById('product-cards-container');
+  container.innerHTML = ''; // Clear previous content
+
+  products.forEach(product => {
+    const card = document.createElement('div');
+    card.classList.add('product-card');
+    const imageSrc = product.ProductImage || "placeholder.png";
+
+    card.innerHTML = `
+      <img src="${imageSrc}" alt="Product Image" class="product-image" />
+      <h3>${product.ProductName}</h3>
+      <p>Price: ₹${product.Selling}</p>
+      <p>Available Quantity: <span class="available-quantity">${product.Quantity}</span></p>
+      <div class="quantity-controls">
+        <button class="decrement-btn">-</button>
+        <input type="number" class="quantity-input" value="0" min="1" max="${product.Quantity}" />
+        <button class="increment-btn">+</button>
+      </div>
+      <button class="add-to-cart-btn">Add to Cart</button>
+    `;
+
+    container.appendChild(card);
+
+    const decrementButton = card.querySelector('.decrement-btn');
+    const incrementButton = card.querySelector('.increment-btn');
+    const quantityInput = card.querySelector('.quantity-input');
+    const addToCartButton = card.querySelector('.add-to-cart-btn');
+    const availableQuantity = parseInt(product.Quantity);
+
+    decrementButton.addEventListener('click', () => updateQuantity(quantityInput, -1, availableQuantity));
+    incrementButton.addEventListener('click', () => updateQuantity(quantityInput, 1, availableQuantity));
+
+    addToCartButton.addEventListener('click', () => {
+      const quantity = parseInt(quantityInput.value);
+      if (quantity <= availableQuantity) {
+        addToCart(product.InventoryID, product.ProductName, product.Selling, quantity);
+      } else {
+        showAlert(`Only ${availableQuantity} units of ${product.ProductName} are available.`);
+      }
+    });
+  });
+}
+
+function updateQuantity(inputField, change, maxQuantity) {
+  const currentQuantity = parseInt(inputField.value);
+  const newQuantity = currentQuantity + change;
+  if (newQuantity >= 1 && newQuantity <= maxQuantity) {
+    inputField.value = newQuantity;
+  }
+}
+
+function addToCart(productId, productName, price, quantity) {
+  const totalPrice = price * quantity;
+  const existingProductIndex = cart.findIndex(item => item.productId === productId);
+
+  if (existingProductIndex !== -1) {
+    cart[existingProductIndex].quantity += quantity;
+    cart[existingProductIndex].price += totalPrice;
+  } else {
+    cart.push({ productId, productName, quantity, price: totalPrice });
+  }
+
+  totalBill += totalPrice;
+  updateCart();
+  updateBill();
+  updateOrderDetails();
+  showAlert(`${quantity} x ${productName} added to cart.`);
+}
+
+
+
+
+
+// cart button
+let cartItemCount = 0; // Track the number of items in the cart
+
+// Update Cart Button with Item Count
+function updateCartButton() {
+  const cartButton = document.getElementById('cart-button');
+  cartButton.textContent = `View Cart (${cartItemCount})`; // Update button text
+}
+
+// Add product to cart
+function addToCart(productId, productName, price, quantity) {
+  const totalPrice = price * quantity;
+  const existingProductIndex = cart.findIndex(item => item.productId === productId);
+
+  if (existingProductIndex !== -1) {
+    cart[existingProductIndex].quantity += quantity;
+    cart[existingProductIndex].price += totalPrice;
+  } else {
+    cart.push({ productId, productName, quantity, price: totalPrice });
+  }
+  totalBill += totalPrice; // Update the total bill
+  cartItemCount += quantity; // Update the cart item count
+  updateCart();
+  updateBill();
+  updateOrderDetails();
+  updateCartButton(); // Update the cart button with the new item count
+  showAlert(`${quantity} x ${productName} added to cart.`);
+}
+
+// function addToCart(productId, productName, price, quantity) {
+//   const totalPrice = price * quantity;
+//   const existingProductIndex = cart.findIndex(item => item.productId === productId);
+
+//   if (existingProductIndex !== -1) {
+//     cart[existingProductIndex].quantity += quantity;
+//     cart[existingProductIndex].price += totalPrice;
+//   } else {
+//     cart.push({ productId, productName, quantity, price: totalPrice });
+//   }
+
+//   totalBill += totalPrice; // Update the total bill
+//   updateCart();  // Update cart display
+//   updateBill();  // Update bill display
+//   updateOrderDetails(); // Update order details table
+//   updateCartButton(); // Update cart button count
+//   showAlert(`${quantity} x ${productName} added to cart.`);
+// }
+
+
+// Remove product from cart
+function removeFromCart(index) {
+  const item = cart[index];
+  cartItemCount -= item.quantity; // Decrease the cart item count
+  totalBill -= item.price;
+  cart.splice(index, 1);
+  updateCart();
+  updateBill();
+  updateOrderDetails();
+  updateCartButton(); // Update the cart button with the new item count
+}
+
+
+  </script>
+</body>
+
+</html>

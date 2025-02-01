@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Pan Shop Management System</h1>
+    
+    <div class="main-content">
+      <!-- Left part: Navbar and Description -->
+      <div class="left-part">
+        <div class="navbar">
+          <a href="inventory.html" class="btn">Inventory</a>
+          <a href="Selling.html" class="btn">Selling</a>
+
+        </div>
+        <div class="description">
+          <h2>About the Software</h2>
+          <p>This is a management system designed for pan parlour businesses. It helps in managing inventory, sales.</p>
+          
+          <h3>Inventory Management:</h3>
+          <p>
+            Allows users to efficiently add, edit, and delete products while tracking stock, pricing, and total values to maintain an organized inventory. It streamlines inventory operations and ensures accurate data handling.
+          </p>
+          
+          <h3>Sales Management:</h3>
+          <p>
+            Provides a seamless interface for recording and managing sales, automatically calculating totals, and ensuring stock availability during transactions. It simplifies the sales process and enhances productivity for the pan parlour business.
+          </p>
+        </div>
+      </div>
+      <!-- Right part: Image -->
+      <div class="right-part">
+        <img src="basic_img_16875893743298.webp" width="350px" alt="Pan Parlour">
+      </div>
+    </div>
+    <div class="logout">
+      <button id="logout-button" onclick="handleLogout()">Logout</button>
+    </div>
+  </div>
+
+
+  <script>
+    function handleLogout() {
+
+      alert("You have been logged out.");
+      window.location.href = "login.html"; // Redirect to login page
+    }
+  </script>
+</body>
+</html>

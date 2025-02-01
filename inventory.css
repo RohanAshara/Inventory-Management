@@ -1,0 +1,316 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #98BC94;
+    background-size: cover; /* Ensures the image covers the entire background */
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #dad7cd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #22223B;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #22223B;
+}
+
+#pro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#pro h2 {
+    margin: 0;
+}
+
+#pro .btn {
+    text-decoration: none;
+    background-color: #588157;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#pro .btn:hover {
+    background-color: #3a5a40;
+}
+
+#add-product {
+    background-color: #f0efeb;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 35px;
+}
+
+#add-product h2 {
+    font-size: 1.8rem;
+    color: #22223B;
+    margin-bottom: 15px;
+}
+
+#add-product form {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+
+#add-product input,
+#add-product button {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    color: #22223B;
+    cursor: pointer;
+}
+
+#add-product input {
+    width: 22%;
+}
+
+#add-product button {
+    width: 22%;
+    background-color: #588157;
+    color: white;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#add-product button:hover {
+    background-color: #3a5a40;
+}
+
+#edit-product {
+    background-color: #f0efeb;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 35px;
+}
+
+#edit-product h2 {
+    font-size: 1.8rem;
+    color: #22223B;
+    margin-bottom: 15px;
+}
+
+#edit-product form {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+
+#edit-product input {
+    padding: 17px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 22%;
+    cursor: pointer;
+}
+
+#edit-product button {
+    padding: 10px;
+    background-color: #588157;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 22%;
+}
+
+#edit-product button:hover {
+    background-color: #44b75e;
+}
+
+#edit-product button[type="button"] {
+    background-color: #588157;
+}
+
+#edit-product button[type="button"]:hover {
+    background-color: #c82333;
+}
+
+.table-container {
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #588157;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+  }
+  
+  table,
+  th,
+  td {
+    border: 1px solid #22223B;
+  }
+  
+  th,
+  td {
+    padding: 10px;
+    text-align: left;
+  }
+  
+  th {
+    position: sticky;
+    top: 0;
+    background-color: #22223B;
+    z-index: 1;
+  }
+  
+  th,
+  td {
+    font-size: 1rem;
+  }
+  
+  td {
+    color: #555;
+  }
+  
+  th {
+    position: sticky;
+      top: 0;
+      background-color: #588157;
+      z-index: 1;
+  }
+  
+
+button.edit-btn,
+button.delete-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button.edit-btn {
+    background-color: #588157;
+    color: white;
+}
+
+button.edit-btn:hover {
+    background-color: #e0a800;
+}
+
+button.delete-btn {
+    background-color: #588157;
+    color: white;
+}
+
+button.delete-btn:hover {
+    background-color: #c82333;
+}
+
+.back-btn {
+    background-color: #d8dcd9;
+}
+
+.back-btn:hover {
+    background-color: #edf3ee;
+}
+
+.grand-total {
+    font-size: 1.2em;
+    color: #588157;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.total-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.total-row .btn {
+    padding: 10px 15px;
+    background-color: #588157;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.total-row .btn:hover {
+    background-color: #3a5a40;
+}
+
+
+.calculate-button {
+    background-color: #588157;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}
+
+
+
+
+/* Custom Alert Box Styling */
+.custom-alert {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border: 2px solid #218838;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 1000;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #22223B;
+}
+
+
+/* Blinking Effect */
+@keyframes blink {
+    100%, 20%, 20% {
+        opacity: 1;
+    }
+    100%, 100% {
+        opacity: 0;
+    }
+  }
+  .blinking {
+    animation: blink 2s linear;
+  }

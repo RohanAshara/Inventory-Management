@@ -1,0 +1,318 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #98BC94;
+}
+
+h1,
+h2 {
+  color: #22223B;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #dad7cd;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Back Button Styles */
+.back-button {
+  display: inline-block;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  background-color: #588157;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #3a5a40;
+}
+
+#sellingsTable {
+  max-height: 500px;
+  height: 200px;
+  /* Test with a smaller height */
+  overflow-y: auto;
+  /* overflow-x: hidden; */
+  border: 1px solid #ddd;
+}
+
+
+
+/* Table Styles */
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+}
+
+table,
+th,
+td {
+  border: 1px solid #22223B;
+}
+
+th,
+td {
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background-color: #22223B;
+  z-index: 1;
+}
+
+th,
+td {
+  font-size: 1rem;
+}
+
+td {
+  color: #555;
+}
+
+th {
+  position: sticky;
+    top: 0;
+    background-color: #588157;
+    z-index: 1;
+}
+
+/* tr:nth-child(even) {
+    background-color: #f9f9f9;
+  } */
+
+
+
+/* General Form Styling */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row>div {
+  flex: 0 0 auto;
+  /* Prevent elements from growing or shrinking */
+}
+
+.form-row input,
+.form-row select {
+  width: 250px;
+  /* Set a fixed width */
+  padding: 8px;
+  /* Add padding for better appearance */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+
+/* Two-column layout for specific rows */
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  /* Reduce gap */
+}
+
+.form-row>div {
+  flex: 1;
+  /* Allow elements to shrink if needed */
+}
+
+.form-row input,
+.form-row select {
+  max-width: 100%;
+  /* Prevent elements from growing too wide */
+}
+
+
+.form-row label,
+.form-row input,
+.form-row select {
+  flex: 1;
+  color: #22223B;
+}
+
+/* Ensure inputs and labels align properly */
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.grand-total {
+  font-size: 1.2em;
+  color: #588157;
+  margin-left: 0px;
+  font-weight: bold;
+}
+
+
+input,
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 30%;
+}
+
+button[type="submit"] {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #588157;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 200px;
+}
+
+/* button[type="submit"] {
+display: block; 
+margin: 20px auto 0; 
+padding: 10px 15px;
+background-color: #007bff;
+color: #fff;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+width: 200px; 
+text-align: center;
+} */
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  /* Align items to opposite ends */
+  align-items: center;
+  /* Vertically center-align items */
+  margin-bottom: 20px;
+}
+
+h1 {
+  margin: 0;
+  /* Remove default margin for proper alignment */
+}
+
+.back-button {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #588157;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.back-button:hover {
+  background-color: #3a5a40;
+}
+
+
+
+button[type="submit"]:hover {
+  background-color: #3a5a40;
+
+}
+
+.total-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;  
+  margin-top: 20px;
+}
+
+.total-row .btn {
+  padding: 10px 15px;
+  background-color: #588157;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.total-row .btn:hover {
+  background-color: #3a5a40;
+}
+
+/* 
+
+/* Custom Alert Box Styling */
+.custom-alert {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border: 2px solid #218838;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 1000;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #22223B;
+}
+
+/* Blinking Effect */
+@keyframes blink {
+  100%, 20%, 20% {
+      opacity: 1;
+  }
+  100%, 100% {
+      opacity: 0;
+  }
+}
+.blinking {
+  animation: blink 2s linear;
+}
+
+/* Filter Section Styling */
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.filter-section label {
+  font-weight: bold;
+  color: #22223B;
+  margin-right: 10px;
+}
+
+#downloadFilteredCSV {
+  padding: 10px 15px;
+  background-color: #588157;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#downloadFilteredCSV:hover{
+  background-color: #3a5a40;
+}

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup Page</title>
+  <link rel="stylesheet" href="signup.css">
+  <style>
+    /* Optional basic styles */
+    .error {
+      color: red;
+      font-size: 0.9em;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 92%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    /* Align password input and toggle buttons */
+    .password-container {
+      position: relative;
+      width: 100%;
+    }
+
+    #password,
+    #confirm-password {
+      width: 100%;
+      padding-right: 30px; /* Create space for the toggle button */
+    }
+
+    button[type="button"] {
+      width: 54px;
+      position: absolute;
+      right: 10px;
+      top: 36%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+
+    /* Optional error styling */
+    .error {
+      color: red;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Sign Up</h2>
+    <h1> hello</h1>
+    <form id="signup-form">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Choose a username" required>
+
+      <label for="password">Password</label>
+      <div class="password-container">
+        <input type="password" id="password" placeholder="Choose a password" required>
+        <button type="button" id="toggle-password" aria-label="Show password">👁️</button>
+      </div>
+      <span id="password-error" class="error"></span>
+
+      <label for="confirm-password">Confirm Password</label>
+      <div class="password-container">
+        <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+        <button type="button" id="toggle-c-password" aria-label="Show password">👁️</button>
+      </div>
+      <span id="confirm-password-error" class="error"></span>
+
+      <button type="submit">Sign Up</button>
+    </form>
+    <div class="link">
+      <p>Already have an account? <a href="login.html">Login here</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Toggle password visibility
+    const togglePasswordButton = document.getElementById('toggle-password');
+    const passwordInput = document.getElementById('password');
+    const toggleConfirmPasswordButton = document.getElementById('toggle-c-password');
+    const ConfirmpasswordInput = document.getElementById('confirm-password');
+
+    togglePasswordButton.addEventListener('click', () => {
+      const isPasswordVisible = passwordInput.type === 'text';
+      passwordInput.type = isPasswordVisible ? 'password' : 'text';
+      togglePasswordButton.textContent = isPasswordVisible ? '👁️' : '🙈'; // Toggle icon
+    });
+
+    toggleConfirmPasswordButton.addEventListener('click', () => {
+      const isPasswordVisible = ConfirmpasswordInput.type === 'text';
+      ConfirmpasswordInput.type = isPasswordVisible ? 'password' : 'text';
+      toggleConfirmPasswordButton.textContent = isPasswordVisible ? '👁️' : '🙈'; // Toggle icon
+    });
+
+    document.getElementById("signup-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+
+      const passwordErrorElement = document.getElementById("password-error");
+      const confirmPasswordErrorElement = document.getElementById("confirm-password-error");
+      
+      passwordErrorElement.textContent = "";
+      confirmPasswordErrorElement.textContent = "";
+
+      // Password validation regex: Minimum 8 characters, at least one letter, one special character
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
+      let isValid = true;
+
+      if (!passwordRegex.test(password)) {
+        passwordErrorElement.textContent = "Password must be at least 8 characters long and contain at least one letter and one special character.";
+        isValid = false;
+      }
+
+      if (password !== confirmPassword) {
+        confirmPasswordErrorElement.textContent = "Passwords do not match.";
+        isValid = false;
+      }
+
+      if (!isValid) return;
+
+      try {
+        const response = await fetch('http://localhost:3000/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message);
+          window.location.href = 'login.html';
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        alert("Error connecting to the server");
+      }
+    });
+  </script>
+</body>
+</html>
