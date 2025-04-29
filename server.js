@@ -15,19 +15,18 @@ app.use(express.urlencoded({ extended: true }));
 const storage = multer.memoryStorage();  // Store the file in memory as a buffer
 const upload = multer({ storage: storage });
 
-
+require('dotenv').config();
 // SQL Server configuration
 const dbConfig = {
-    user: "sa",
-    password: "123456",
-    server: "LAPTOP-AAIO1HUT",
-    database: "pan_shop",
+    user: process.env.SQL_USER,
+    password: process.env.SQL_PASSWORD,
+    server: process.env.SQL_SERVER,
+    database: process.env.SQL_DATABASE,
     options: {
-        encrypt: true,
-        trustServerCertificate: true,
+      encrypt: true,
+      trustServerCertificate: true,
     },
-};
-
+  };
 // Function to connect to MSSQL
 const connectToDatabase = async () => {
     try {
