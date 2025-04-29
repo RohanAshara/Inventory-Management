@@ -18,10 +18,10 @@ const upload = multer({ storage: storage });
 require('dotenv').config();
 // SQL Server configuration
 const dbConfig = {
-    user: process.env.SQL_USER,
-    password: process.env.SQL_PASSWORD,
-    server: process.env.SQL_SERVER,
-    database: process.env.SQL_DATABASE,
+    user: process.env.SQL_USER,  //add your user name
+    password: process.env.SQL_PASSWORD,  //add password
+    server: process.env.SQL_SERVER,  //add server name
+    database: process.env.SQL_DATABASE,  //add database name
     options: {
       encrypt: true,
       trustServerCertificate: true,
